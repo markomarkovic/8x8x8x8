@@ -1,0 +1,38 @@
+{
+  "name": "8x8x8x8",
+  "description": "8×8×8×8",
+  "version": "0.0.1",
+  "author": "Marko Marković <okram@civokram.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "vue-cli-service build",
+    "dev": "vue-cli-service serve",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "core-js": "3.6.4",
+    "vue": "2.6.11",
+    "vuex": "3.1.2"
+  },
+  "devDependencies": {
+    "@vue/cli": "4.1.2",
+    "@vue/cli-plugin-babel": "4.1.2",
+    "@vue/cli-plugin-eslint": "4.1.2",
+    "@vue/cli-plugin-vuex": "4.1.2",
+    "@vue/cli-service": "4.1.2",
+    "@vue/eslint-config-prettier": "6.0.0",
+    "babel-eslint": "10.0.3",
+    "eslint": "6.8.0",
+    "eslint-plugin-prettier": "3.1.2",
+    "eslint-plugin-vue": "6.1.2",
+    "lint-staged": "10.0.7",
+    "node-sass": "4.13.1",
+    "prettier": "1.19.1",
+    "sass-loader": "8.0.2",
+    "vue-template-compiler": "2.6.11"
+  },
+  "gitHooks": {
+    "pre-commit": "lint-staged"
+  }
+}

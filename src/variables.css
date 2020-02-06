@@ -1,0 +1,19 @@
+:root {
+  --system-color-1: #aaaaaa;
+  --system-color-2: #000000;
+  --system-color-3: #ffffff;
+  --system-color-4: #6688bb;
+  --system-color-5: #ee4444;
+  --system-color-6: #55dd55;
+  --system-color-7: #0044dd;
+  --system-color-8: #ee9900;
+
+  --system-color-gray: var(--system-color-1);
+  --system-color-black: var(--system-color-2);
+  --system-color-white: var(--system-color-3);
+  --system-color-danube: var(--system-color-4);
+  --system-color-red: var(--system-color-5);
+  --system-color-green: var(--system-color-6);
+  --system-color-blue: var(--system-color-7);
+  --system-color-yellow: var(--system-color-8);
+}
