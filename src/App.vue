@@ -1,13 +1,23 @@
 <template>
   <div id="app">
-    <h1>Hello, World!</h1>
+    <Canvas />
+    <Palette />
+    <Frames />
   </div>
 </template>
 
 <script>
 import '@/variables.css'
+import Canvas from '@/components/Canvas'
+import Frames from '@/components/Frames'
+import Palette from '@/components/Palette'
 export default {
   name: 'app',
+  components: {
+    Canvas,
+    Frames,
+    Palette,
+  },
 }
 </script>
 
@@ -18,5 +28,6 @@ html {
   -webkit-font-smoothing: none;
   user-select: none;
   font-size: 11px;
+  padding: 1rem;
 }
 </style>
