@@ -1,21 +1,28 @@
 <template>
   <div class="palette">
     <div
+      class="color"
       v-for="(color, i) in palette"
       v-bind:key="i"
-      class="color"
+      v-bind:class="{ active: activeIndex === i }"
       v-bind:style="{ background: color }"
+      v-on:click="setActiveIndex(i)"
     ></div>
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
+import { mapMutations } from 'vuex'
 export default {
   name: 'Palette',
   computed: mapState({
-    palette: state => state.palette,
+    palette: state => state.palette.colors,
+    activeIndex: state => state.palette.activeIndex,
   }),
+  methods: {
+    ...mapMutations('palette', ['setActiveIndex']),
+  },
 }
 </script>
 
