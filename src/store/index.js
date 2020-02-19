@@ -5,6 +5,7 @@ Vue.use(Vuex)
 
 import app from './app'
 import palette from './palette'
+import animation from './animation'
 
 export default new Vuex.Store({
   state: {},
@@ -13,5 +14,6 @@ export default new Vuex.Store({
   modules: {
     app,
     palette,
+    animation,
   },
 })

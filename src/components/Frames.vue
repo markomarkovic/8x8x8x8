@@ -1,16 +1,26 @@
 <template>
   <div class="frames">
-    <div v-for="(frame, i) in frames" v-bind:key="i" class="frame"></div>
+    <div
+      class="frame"
+      v-for="(frame, i) in frames"
+      v-bind:key="i"
+      v-bind:class="{ active: activeIndex === i }"
+      v-on:click="setActiveIndex(i)"
+    ></div>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapMutations } from 'vuex'
 export default {
   name: 'Frames',
   computed: mapState({
     frames: state => state.app.frames,
+    activeIndex: state => state.animation.activeIndex,
   }),
+  methods: {
+    ...mapMutations('animation', ['setActiveIndex']),
+  },
 }
 </script>
 
