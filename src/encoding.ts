@@ -1,14 +1,14 @@
 import type { AppState, ColorIndex, Frame, Frames, Palette } from './types'
 
 const DEFAULT_PALETTE: Palette = [
-  '000000', // black
-  'FFFFFF', // white
-  'FF0000', // red
-  '00FF00', // green
-  '0000FF', // blue
-  'FFFF00', // yellow
-  'FF00FF', // magenta
-  '00FFFF', // cyan
+  '000000', // 0x000 - black
+  'ffffff', // 0xfff - white
+  'bb0000', // 0xb00 - red
+  '008800', // 0x080 - green
+  '2244cc', // 0x24c - blue
+  'eebb00', // 0xeb0 - yellow
+  'bb5522', // 0xb52 - orange/brown
+  '00cccc', // 0x0cc - cyan
 ]
 
 const createEmptyFrame = (): Frame => Array(64).fill(0) as Frame
