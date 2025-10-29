@@ -4,9 +4,10 @@ A pixel art animation editor for creating 8×8 pixel animations with 8 frames an
 
 ## Features
 
-- **8×8 pixel grid** for drawing
+- **8×8 pixel grid** for drawing with drag-to-paint support
 - **8 animation frames** with frame-by-frame editing
 - **8-color palette** with customizable colors
+- **Advanced URL compression** - 70-90% reduction with smart format selection
 - **URL-based sharing** - entire animation encoded in URL hash
 - **Animated preview** at 8 FPS
 - **Animated favicon** that matches your creation
@@ -27,7 +28,9 @@ A pixel art animation editor for creating 8×8 pixel animations with 8 frames an
 
 ### Sharing
 
-Your animation is automatically encoded in the URL. Just copy and share the URL to share your animation!
+Your animation is automatically encoded in the URL with intelligent compression. The app automatically selects the most efficient encoding format (v2, v3, or v4) based on your animation's characteristics, typically achieving 70-90% size reduction. Just copy and share the URL to share your animation!
+
+See [ENCODING_FORMATS.md](ENCODING_FORMATS.md) for technical details on the compression formats.
 
 ## Development
 
@@ -51,6 +54,22 @@ pnpm format
 - **TypeScript** - Type safety
 - **Vite** - Build tool with single-file output
 - **Canvas API** - Rendering animations
+- **Compression Streams API** - Gzip compression for URL optimization
+
+## URL Compression
+
+The app uses advanced compression techniques to minimize URL length:
+
+- **3 encoding formats**: Plain hex (v2), Delta encoding (v3), Run-length encoding (v4)
+- **Automatic selection**: Encodes with all formats and picks the shortest
+- **Gzip compression**: All formats use gzip + URL-safe base64
+- **Backward compatible**: Reads legacy uncompressed 560-char URLs
+
+Typical compression results:
+
+- Static frames: ~89% reduction
+- Solid colors: ~87% reduction
+- Gradual animations: ~79% reduction
 
 ## License
 

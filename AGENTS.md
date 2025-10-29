@@ -17,19 +17,50 @@ This file provides guidance to AI Agents when working with code in this reposito
 
 ### State Management & URL Encoding
 
-The app uses **URL hash-based state persistence** - all animation data is encoded in the URL:
+The app uses **URL hash-based state persistence** with **intelligent compression** - all animation data is encoded in the URL with automatic format selection.
 
-- **Structure**: `#[48 hex chars: palette][512 hex chars: frames]`
-- **Palette**: 8 colors × 6 hex digits each (e.g., `FF0000`)
-- **Frames**: 8 frames × 64 pixels × 1 hex digit (color index 0-7)
-- **Total**: 560 characters
+#### Encoding Formats
 
-Key functions in `encoding.ts`:
+The app supports 4 formats (automatically selects best):
 
-- `encodeState()` - Serializes AppState to URL hash
-- `decodeState()` - Deserializes URL hash to AppState
-- `updateURL()` - Updates browser URL hash whenever state changes
-- State automatically syncs on hash change for sharing/bookmarking
+- **Legacy**: Uncompressed 560-char hex (backward compatibility)
+- **v2**: Gzip-compressed plain hex (baseline)
+- **v3**: Gzip-compressed delta encoding (best for similar frames)
+- **v4**: Gzip-compressed run-length encoding (best for solid colors)
+
+#### Format Structure
+
+**Legacy**: `#[palette:48hex][frames:512hex]` (560 chars)
+**v2-v4**: `#v{2|3|4}:[gzip+base64url data]` (typically 60-200 chars)
+
+#### Key Functions
+
+In `encoding.ts`:
+
+- `updateURL()` - Encodes state, tries all formats, picks shortest, compresses with gzip
+- `decodeState()` - Detects format (v2/v3/v4/legacy) and decodes, async for compressed
+- `getInitialState()` - Loads state from URL on page load
+- `getPendingDecodedState()` - Retrieves async decompressed state
+
+In `encoding-advanced.ts`:
+
+- `encodeV3()` / `decodeV3()` - Delta encoding (frame differences)
+- `encodeV4()` / `decodeV4()` - Run-length encoding (color runs)
+- `getBestEncoding()` - Tries all formats, returns shortest
+
+In `compression.ts`:
+
+- `compress()` - Gzip compression + URL-safe base64
+- `decompress()` - Base64 decode + gzip decompression
+
+#### Async Decompression
+
+Compressed URLs (v2/v3/v4) decompress asynchronously:
+
+1. `decodeState()` returns `null` during decompression
+2. Decompression completes → fires `statedecompressed` custom event
+3. `App.tsx` listens for event and updates state
+4. Handles race condition where decompression completes before listeners are set up
 
 ### Core Type System
 
@@ -113,10 +144,35 @@ Uses `vite-plugin-singlefile` to bundle everything into a **single HTML file** (
 ## Default State
 
 The application starts with:
+
 - **Empty frames**: All 8 frames filled with black pixels (color index 0)
 - **Default palette**: Basic colors (black, white, red, green, blue, yellow, magenta, cyan)
 - **Selected color**: Index 0 (black)
 - **Current frame**: Frame 0
+
+## URL Compression Strategy
+
+When making changes that affect URL encoding:
+
+1. **Test all format scenarios**:
+   - Static frames (all identical) - should favor v3
+   - Solid colors - should favor v4
+   - High-frequency patterns - should favor v2
+   - Gradual animations - should favor v3
+
+2. **Maintain backward compatibility**:
+   - Always support reading legacy 560-char uncompressed format
+   - New formats must be additive (v5, v6, etc.)
+   - Never break existing URLs
+
+3. **Compression trade-offs**:
+   - v3 (delta): 70-90% reduction for similar frames, but worse if frames differ significantly
+   - v4 (RLE): 70-90% reduction for solid colors, but terrible for checkerboard patterns
+   - v2 (plain): Baseline, always works reasonably well
+
+4. **Console logging**: Check browser console to see which format was selected and compression stats
+
+See [ENCODING_FORMATS.md](ENCODING_FORMATS.md) for complete technical documentation.
 
 ## Creating Animations
 
@@ -139,16 +195,18 @@ const palette = [
 const createFrame = () => Array(64).fill(0) // 64 pixels, all black
 
 // Create 8 frames with custom pixel data
-const frames = Array(8).fill(null).map(() => {
-  const frame = createFrame()
-  // Set pixel colors here: frame[y * 8 + x] = colorIndex
-  return frame
-})
+const frames = Array(8)
+  .fill(null)
+  .map(() => {
+    const frame = createFrame()
+    // Set pixel colors here: frame[y * 8 + x] = colorIndex
+    return frame
+  })
 
 // Encode to URL hash
-const hash = palette.join('') + frames.map(f =>
-  f.map(c => c.toString(16)).join('')
-).join('')
+const hash =
+  palette.join('') +
+  frames.map((f) => f.map((c) => c.toString(16)).join('')).join('')
 
 console.log('URL: http://localhost:5173/#' + hash)
 ```
@@ -160,3 +218,6 @@ console.log('URL: http://localhost:5173/#' + hash)
 - **Color format**: Hex colors stored WITHOUT '#' prefix, added only when rendering
 - **Pixel coordinates**: `y * 8 + x` for row-major order (0-63)
 - **Animation timing**: 8 FPS (125ms per frame) for retro feel
+- **Async compression**: URL updates are async to avoid blocking UI - don't await them
+- **Event-driven decompression**: Use `statedecompressed` custom event for async load completion
+- **Format detection**: Check URL prefix (v2:/v3:/v4:) or length (560 = legacy) to determine format
