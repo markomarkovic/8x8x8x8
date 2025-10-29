@@ -1,4 +1,5 @@
 import { compress, decompress } from './compression'
+import { decodeV3, decodeV4, getBestEncoding } from './encoding-advanced'
 import type { AppState, ColorIndex, Frame, Frames, Palette } from './types'
 
 const DEFAULT_PALETTE: Palette = [
@@ -74,8 +75,11 @@ const decodeStateFromHex = (hex: string): AppState => {
 }
 
 /**
- * Decodes state from URL hash (handles both compressed and uncompressed formats)
- * Compressed hashes start with 'v2:' prefix
+ * Decodes state from URL hash (handles all formats)
+ * - v2: Compressed hex (gzip + base64)
+ * - v3: Compressed delta encoding (gzip + base64)
+ * - v4: Compressed run-length encoding (gzip + base64)
+ * - Legacy: Uncompressed 560-char hex
  * @param hash The URL hash (without the # character)
  * @returns AppState or null if still decompressing
  */
@@ -85,26 +89,55 @@ export const decodeState = (hash: string): AppState | null => {
   }
 
   try {
-    // Check if hash is compressed (starts with 'v2:')
+    // V2: Compressed hex format
     if (hash.startsWith('v2:')) {
       const compressedData = hash.slice('v2:'.length)
-      // Schedule async decompression
       decompress(compressedData)
         .then((hex) => {
           const state = decodeStateFromHex(hex)
-          // Update the pending state
           pendingDecodedState = state
-          // Trigger a custom event to notify listeners
           window.dispatchEvent(new CustomEvent('statedecompressed'))
         })
         .catch(() => {
           pendingDecodedState = DEFAULT_STATE
           window.dispatchEvent(new CustomEvent('statedecompressed'))
         })
-      return null // Signal that decompression is in progress
+      return null
     }
 
-    // Uncompressed format (backward compatibility)
+    // V3: Compressed delta encoding
+    if (hash.startsWith('v3:')) {
+      const compressedData = hash.slice('v3:'.length)
+      decompress(compressedData)
+        .then((hex) => {
+          const state = decodeV3(hex)
+          pendingDecodedState = state
+          window.dispatchEvent(new CustomEvent('statedecompressed'))
+        })
+        .catch(() => {
+          pendingDecodedState = DEFAULT_STATE
+          window.dispatchEvent(new CustomEvent('statedecompressed'))
+        })
+      return null
+    }
+
+    // V4: Compressed run-length encoding
+    if (hash.startsWith('v4:')) {
+      const compressedData = hash.slice('v4:'.length)
+      decompress(compressedData)
+        .then((hex) => {
+          const state = decodeV4(hex)
+          pendingDecodedState = state
+          window.dispatchEvent(new CustomEvent('statedecompressed'))
+        })
+        .catch(() => {
+          pendingDecodedState = DEFAULT_STATE
+          window.dispatchEvent(new CustomEvent('statedecompressed'))
+        })
+      return null
+    }
+
+    // Legacy: Uncompressed format (backward compatibility)
     if (hash.length === 560) {
       return decodeStateFromHex(hash)
     }
@@ -137,14 +170,21 @@ export const getInitialState = (): AppState => {
 }
 
 /**
- * Updates URL hash with compressed state
+ * Updates URL hash with the best compressed format
+ * Tries v2 (hex), v3 (delta), and v4 (RLE) and uses the shortest
  */
 export const updateURL = (state: AppState): void => {
-  const hex = encodeStateToHex(state)
+  // Get the best uncompressed encoding
+  const { version, data } = getBestEncoding(state)
+
   // Compress and update URL asynchronously
-  compress(hex)
+  compress(data)
     .then((compressed) => {
-      const newHash = 'v2:' + compressed
+      const newHash = `${version}:${compressed}`
+
+      // Log encoding stats for debugging
+      console.log(`Encoding: ${version}, uncompressed: ${data.length} chars, compressed: ${compressed.length} chars`)
+
       // Only update if hash has actually changed
       if (window.location.hash !== '#' + newHash) {
         window.location.hash = newHash
@@ -152,7 +192,8 @@ export const updateURL = (state: AppState): void => {
     })
     .catch((error) => {
       console.error('Compression failed:', error)
-      // Fallback to uncompressed
-      window.location.hash = hex
+      // Fallback to uncompressed v2
+      const fallbackHex = encodeStateToHex(state)
+      window.location.hash = fallbackHex
     })
 }
