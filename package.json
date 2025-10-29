@@ -1,0 +1,22 @@
+{
+  "name": "8x8x8x8",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "format": "prettier --write --ignore-unknown --log-level=error ."
+  },
+  "devDependencies": {
+    "prettier": "3.6.2",
+    "prettier-plugin-organize-imports": "4.3.0",
+    "typescript": "5.9.3",
+    "vite": "7.1.12",
+    "vite-plugin-singlefile": "2.3.0"
+  },
+  "dependencies": {
+    "preact": "10.27.2"
+  }
+}

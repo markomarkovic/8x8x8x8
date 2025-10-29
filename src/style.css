@@ -1,0 +1,133 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background: #1a1a1a;
+  color: #fff;
+  overflow: hidden;
+}
+
+#app {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  gap: 50px;
+  align-content: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Preview (Bottom Right) */
+.preview {
+  grid-column: 2;
+  grid-row: 2;
+  width: 50px;
+  height: 50px;
+  align-self: end;
+  justify-self: end;
+}
+
+.preview canvas {
+  width: 50px;
+  height: 50px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Grid (Left) */
+.grid {
+  grid-column: 1;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  gap: 0;
+  width: 400px;
+  height: 400px;
+}
+
+.grid > div {
+  cursor: pointer;
+  transition: opacity 0.1s;
+}
+
+.grid > div:hover {
+  opacity: 0.8;
+}
+
+/* Palette (Right) */
+.palette {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.palette > div {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+}
+
+.palette > div:hover {
+  outline-color: #888;
+}
+
+.palette > div.selected {
+  outline-color: #fff;
+}
+
+.palette > div input[type='color'] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Frame Selector (Bottom Left) */
+.frame-selector {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  justify-content: center;
+  gap: 0;
+}
+
+.frame-selector > div {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+}
+
+.frame-selector > div:hover {
+  outline-color: #888;
+}
+
+.frame-selector > div.selected {
+  outline-color: #fff;
+}
+
+.frame-selector > div canvas {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
