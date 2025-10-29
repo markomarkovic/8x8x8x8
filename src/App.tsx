@@ -3,7 +3,12 @@ import { FrameSelector } from './components/FrameSelector'
 import { Grid } from './components/Grid'
 import { Palette } from './components/Palette'
 import { Preview } from './components/Preview'
-import { decodeState, getInitialState, updateURL } from './encoding'
+import {
+  decodeState,
+  getInitialState,
+  getPendingDecodedState,
+  updateURL,
+} from './encoding'
 import { startFaviconAnimation } from './favicon'
 import type { AppState, ColorIndex, Palette as PaletteType } from './types'
 
@@ -26,7 +31,21 @@ export const App = () => {
       const hash = window.location.hash.slice(1)
       if (hash) {
         const newState = decodeState(hash)
-        // Preserve the current UI state (selected color and frame)
+        if (newState) {
+          // Synchronous decode (uncompressed format)
+          setState((prevState) => ({
+            ...newState,
+            selectedColorIndex: prevState.selectedColorIndex,
+            currentFrameIndex: prevState.currentFrameIndex,
+          }))
+        }
+        // If null, async decompression is in progress
+      }
+    }
+
+    const handleStateDecompressed = () => {
+      const newState = getPendingDecodedState()
+      if (newState) {
         setState((prevState) => ({
           ...newState,
           selectedColorIndex: prevState.selectedColorIndex,
@@ -36,7 +55,19 @@ export const App = () => {
     }
 
     window.addEventListener('hashchange', handleHashChange)
-    return () => window.removeEventListener('hashchange', handleHashChange)
+    window.addEventListener('statedecompressed', handleStateDecompressed)
+
+    // Check if there's already a pending decompressed state from initial load
+    // This handles the case where decompression completed before event listener was added
+    const pendingState = getPendingDecodedState()
+    if (pendingState) {
+      setState(pendingState)
+    }
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange)
+      window.removeEventListener('statedecompressed', handleStateDecompressed)
+    }
   }, [])
 
   const handlePixelClick = (pixelIndex: number) => {
