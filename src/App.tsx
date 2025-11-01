@@ -27,24 +27,7 @@ export const App = () => {
 
   // Listen for hash changes from external URL updates
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.slice(1)
-      if (hash) {
-        const newState = decodeState(hash)
-        if (newState) {
-          // Synchronous decode (uncompressed format)
-          setState((prevState) => ({
-            ...newState,
-            selectedColorIndex: prevState.selectedColorIndex,
-            currentFrameIndex: prevState.currentFrameIndex,
-          }))
-        }
-        // If null, async decompression is in progress
-      }
-    }
-
-    const handleStateDecompressed = () => {
-      const newState = getPendingDecodedState()
+    const mergeDecodedState = (newState: AppState | null) => {
       if (newState) {
         setState((prevState) => ({
           ...newState,
@@ -54,11 +37,23 @@ export const App = () => {
       }
     }
 
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1)
+      if (hash) {
+        const decodedState = decodeState(hash)
+        mergeDecodedState(decodedState)
+      }
+    }
+
+    const handleStateDecompressed = () => {
+      const pendingState = getPendingDecodedState()
+      mergeDecodedState(pendingState)
+    }
+
     window.addEventListener('hashchange', handleHashChange)
     window.addEventListener('statedecompressed', handleStateDecompressed)
 
     // Check if there's already a pending decompressed state from initial load
-    // This handles the case where decompression completed before event listener was added
     const pendingState = getPendingDecodedState()
     if (pendingState) {
       setState(pendingState)
