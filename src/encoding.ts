@@ -89,52 +89,18 @@ export const decodeState = (hash: string): AppState | null => {
   }
 
   try {
-    // V2: Compressed hex format
-    if (hash.startsWith('v2:')) {
-      const compressedData = hash.slice('v2:'.length)
-      decompress(compressedData)
-        .then((hex) => {
-          const state = decodeStateFromHex(hex)
-          pendingDecodedState = state
-          window.dispatchEvent(new CustomEvent('statedecompressed'))
-        })
-        .catch(() => {
-          pendingDecodedState = DEFAULT_STATE
-          window.dispatchEvent(new CustomEvent('statedecompressed'))
-        })
-      return null
+    const versionDecoders: Record<string, (data: string) => AppState> = {
+      'v2:': decodeStateFromHex,
+      'v3:': decodeV3,
+      'v4:': decodeV4,
     }
 
-    // V3: Compressed delta encoding
-    if (hash.startsWith('v3:')) {
-      const compressedData = hash.slice('v3:'.length)
-      decompress(compressedData)
-        .then((hex) => {
-          const state = decodeV3(hex)
-          pendingDecodedState = state
-          window.dispatchEvent(new CustomEvent('statedecompressed'))
-        })
-        .catch(() => {
-          pendingDecodedState = DEFAULT_STATE
-          window.dispatchEvent(new CustomEvent('statedecompressed'))
-        })
-      return null
-    }
-
-    // V4: Compressed run-length encoding
-    if (hash.startsWith('v4:')) {
-      const compressedData = hash.slice('v4:'.length)
-      decompress(compressedData)
-        .then((hex) => {
-          const state = decodeV4(hex)
-          pendingDecodedState = state
-          window.dispatchEvent(new CustomEvent('statedecompressed'))
-        })
-        .catch(() => {
-          pendingDecodedState = DEFAULT_STATE
-          window.dispatchEvent(new CustomEvent('statedecompressed'))
-        })
-      return null
+    for (const [prefix, decoder] of Object.entries(versionDecoders)) {
+      if (hash.startsWith(prefix)) {
+        const compressedData = hash.slice(prefix.length)
+        handleAsyncDecompression(compressedData, decoder)
+        return null
+      }
     }
 
     // Legacy: Uncompressed format (backward compatibility)
@@ -146,6 +112,24 @@ export const decodeState = (hash: string): AppState | null => {
   } catch {
     return DEFAULT_STATE
   }
+}
+
+/**
+ * Handles async decompression and state updates
+ */
+const handleAsyncDecompression = (
+  compressedData: string,
+  decoder: (data: string) => AppState
+): void => {
+  decompress(compressedData)
+    .then((decompressedData) => {
+      pendingDecodedState = decoder(decompressedData)
+      window.dispatchEvent(new CustomEvent('statedecompressed'))
+    })
+    .catch(() => {
+      pendingDecodedState = DEFAULT_STATE
+      window.dispatchEvent(new CustomEvent('statedecompressed'))
+    })
 }
 
 // Store for pending decoded state
@@ -174,26 +158,22 @@ export const getInitialState = (): AppState => {
  * Tries v2 (hex), v3 (delta), and v4 (RLE) and uses the shortest
  */
 export const updateURL = (state: AppState): void => {
-  // Get the best uncompressed encoding
   const { version, data } = getBestEncoding(state)
 
-  // Compress and update URL asynchronously
   compress(data)
-    .then((compressed) => {
-      const newHash = `${version}:${compressed}`
+    .then((compressedData) => {
+      const newHash = `${version}:${compressedData}`
 
-      // Log encoding stats for debugging
-      console.log(`Encoding: ${version}, uncompressed: ${data.length} chars, compressed: ${compressed.length} chars`)
+      console.log(
+        `Encoding: ${version}, uncompressed: ${data.length} chars, compressed: ${compressedData.length} chars`
+      )
 
-      // Only update if hash has actually changed
-      if (window.location.hash !== '#' + newHash) {
+      if (window.location.hash !== `#${newHash}`) {
         window.location.hash = newHash
       }
     })
     .catch((error) => {
       console.error('Compression failed:', error)
-      // Fallback to uncompressed v2
-      const fallbackHex = encodeStateToHex(state)
-      window.location.hash = fallbackHex
+      window.location.hash = encodeStateToHex(state)
     })
 }
