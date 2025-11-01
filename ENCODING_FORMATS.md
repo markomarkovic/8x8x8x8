@@ -24,8 +24,6 @@
 
 - **Format**: `v2:[base64-gzip-compressed-hex]`
 - **Encoding**: Palette + all frames as hex → gzip → base64url
-- **Pros**: Simple, consistent baseline
-- **Cons**: Doesn't exploit frame similarities or patterns
 - **Best for**: Random or highly varied animations
 
 ### V3: Delta Encoding + Gzip
@@ -36,12 +34,7 @@
   - For frames 2-8: store only changed pixels
   - Each delta: `[count:2hex][position:3hex,color:3hex...]`
   - Position and color packed as 9-bit value (position<<3 | color)
-- **Pros**: Extremely efficient for animations with minor frame-to-frame changes
-- **Cons**: Less efficient if frames are very different
-- **Best for**:
-  - Smooth animations with gradual changes
-  - Static images (all frames identical)
-  - Looping animations with subtle variations
+- **Best for**: Smooth animations with gradual changes, static images, looping animations
 
 ### V4: Run-Length Encoding + Gzip
 
@@ -51,13 +44,7 @@
   - Each run: `[count:2hex][color:3hex,length:3hex...]`
   - Color and run length packed as 9-bit value (color<<6 | (length-1))
   - Maximum run length: 63 pixels
-- **Pros**: Very efficient for solid colors or horizontal/vertical patterns
-- **Cons**: Inefficient for checkerboard or high-frequency patterns
-- **Best for**:
-  - Solid color fills
-  - Gradients
-  - Simple geometric shapes
-  - Backgrounds with large uniform areas
+- **Best for**: Solid color fills, gradients, simple geometric shapes
 
 ## Automatic Format Selection
 
@@ -124,15 +111,3 @@ The decoder automatically detects and handles:
 2. **Decoding is event-driven**: Compressed URLs trigger async decompression with custom events
 3. **Race condition handling**: Handles cases where decompression completes before React event listeners are set up
 4. **Favicon animation**: Special handling ensures animated favicon works with all formats
-
-## Usage in Application
-
-```typescript
-// Encoding (automatic)
-updateURL(state) // Tries all formats, picks shortest
-
-// Decoding (automatic format detection)
-const state = decodeState(hash) // Returns null if async decompression in progress
-```
-
-The format selection is completely transparent to the user - they just get the shortest possible URL!

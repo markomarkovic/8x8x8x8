@@ -12,6 +12,10 @@ This file provides guidance to AI Agents when working with code in this reposito
 - `pnpm build` - Build for production (TypeScript compilation + Vite build into single HTML file)
 - `pnpm preview` - Preview production build
 - `pnpm format` - Format code with Prettier
+- `pnpm functions:build` - Build Cloud Functions
+- `pnpm functions:deploy` - Deploy Cloud Functions
+- `pnpm functions:logs` - View Cloud Function logs
+- `pnpm deploy` - Deploy everything (client + functions)
 
 ## Architecture
 
@@ -19,19 +23,7 @@ This file provides guidance to AI Agents when working with code in this reposito
 
 The app uses **URL hash-based state persistence** with **intelligent compression** - all animation data is encoded in the URL with automatic format selection.
 
-#### Encoding Formats
-
-The app supports 4 formats (automatically selects best):
-
-- **Legacy**: Uncompressed 560-char hex (backward compatibility)
-- **v2**: Gzip-compressed plain hex (baseline)
-- **v3**: Gzip-compressed delta encoding (best for similar frames)
-- **v4**: Gzip-compressed run-length encoding (best for solid colors)
-
-#### Format Structure
-
-**Legacy**: `#[palette:48hex][frames:512hex]` (560 chars)
-**v2-v4**: `#v{2|3|4}:[gzip+base64url data]` (typically 60-200 chars)
+See [ENCODING_FORMATS.md](ENCODING_FORMATS.md) for complete technical documentation on the compression formats (v2/v3/v4/legacy).
 
 #### Key Functions
 
@@ -171,8 +163,6 @@ When making changes that affect URL encoding:
    - v2 (plain): Baseline, always works reasonably well
 
 4. **Console logging**: Check browser console to see which format was selected and compression stats
-
-See [ENCODING_FORMATS.md](ENCODING_FORMATS.md) for complete technical documentation.
 
 ## Creating Animations
 
