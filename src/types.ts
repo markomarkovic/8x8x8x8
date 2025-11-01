@@ -10,3 +10,23 @@ export type AppState = {
   selectedColorIndex: ColorIndex
   currentFrameIndex: ColorIndex
 }
+
+export type SubmissionStatus = 'pending' | 'approved' | 'rejected'
+
+export type Submission = {
+  id: string
+  userId: string
+  userEmail?: string
+  animationData: string
+  createdAt: Date
+  status: SubmissionStatus
+}
+
+export type GalleryItem = {
+  id: string
+  userId: string
+  userEmail?: string
+  animationData: string
+  approvedAt: Date
+  approvedBy: string
+}
