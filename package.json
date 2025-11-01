@@ -5,9 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:firebase": "pnpm functions:build && firebase emulators:start",
     "build": "tsc && vite build",
+    "build:all": "pnpm build && pnpm functions:build",
     "preview": "vite preview",
-    "format": "prettier --write --ignore-unknown --log-level=error ."
+    "format": "prettier --write --ignore-unknown --log-level=error .",
+    "functions:build": "pnpm --filter functions build",
+    "functions:build:watch": "pnpm --filter functions build:watch",
+    "functions:deploy": "pnpm functions:build && firebase deploy --only functions",
+    "functions:logs": "firebase functions:log",
+    "functions:serve": "pnpm functions:build && firebase emulators:start --only functions",
+    "deploy": "pnpm build:all && firebase deploy",
+    "deploy:hosting": "pnpm build && firebase deploy --only hosting",
+    "deploy:functions": "pnpm functions:deploy"
   },
   "devDependencies": {
     "prettier": "3.6.2",
@@ -17,6 +27,7 @@
     "vite-plugin-singlefile": "2.3.0"
   },
   "dependencies": {
+    "firebase": "12.5.0",
     "preact": "10.27.2"
   }
 }
