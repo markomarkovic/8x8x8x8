@@ -1,8 +1,31 @@
+import { onAuthStateChanged, type User } from 'firebase/auth'
+import {
+  collection,
+  doc,
+  getDoc,
+  onSnapshot,
+  orderBy,
+  query,
+  Timestamp,
+  where,
+} from 'firebase/firestore'
 import { useEffect, useState } from 'preact/hooks'
+import {
+  approveSubmission,
+  getUserEmails,
+  rejectSubmission,
+  submitAnimation,
+} from './api'
+import { ApprovalModal } from './components/ApprovalModal'
+import { Auth } from './components/Auth'
 import { FrameSelector } from './components/FrameSelector'
+import { Gallery } from './components/Gallery'
 import { Grid } from './components/Grid'
+import { MyQueue } from './components/MyQueue'
 import { Palette } from './components/Palette'
+import { PendingReview } from './components/PendingReview'
 import { Preview } from './components/Preview'
+import { SubmitButton } from './components/SubmitButton'
 import {
   decodeState,
   getInitialState,
@@ -10,10 +33,133 @@ import {
   updateURL,
 } from './encoding'
 import { startFaviconAnimation } from './favicon'
-import type { AppState, ColorIndex, Palette as PaletteType } from './types'
+import { auth, db } from './firebase'
+import type {
+  AppState,
+  ColorIndex,
+  GalleryItem,
+  Palette as PaletteType,
+  Submission,
+} from './types'
 
 export const App = () => {
   const [state, setState] = useState<AppState>(getInitialState)
+  const [user, setUser] = useState<User | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [mySubmissions, setMySubmissions] = useState<Submission[]>([])
+  const [pendingSubmissions, setPendingSubmissions] = useState<Submission[]>([])
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([])
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<Submission | null>(null)
+
+  const userIsAdmin = isAdmin
+  const pendingCount = mySubmissions.filter(
+    (s) => s.status === 'pending'
+  ).length
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser)
+
+      // Check if user is admin
+      if (currentUser) {
+        const adminDoc = await getDoc(doc(db, 'admins', currentUser.uid))
+        setIsAdmin(adminDoc.exists())
+
+        // Expose UID in console for easy access during setup
+        console.log('Your Firebase UID:', currentUser.uid)
+        console.log('Is Admin:', adminDoc.exists())
+      } else {
+        setIsAdmin(false)
+      }
+    })
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    if (!user) {
+      setMySubmissions([])
+      return
+    }
+
+    const q = query(
+      collection(db, 'submissions'),
+      where('userId', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    )
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const submissions: Submission[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        userId: doc.data().userId,
+        animationData: doc.data().animationData,
+        createdAt: (doc.data().createdAt as Timestamp).toDate(),
+        status: doc.data().status,
+      }))
+      setMySubmissions(submissions)
+    })
+
+    return unsubscribe
+  }, [user])
+
+  useEffect(() => {
+    if (!userIsAdmin) {
+      setPendingSubmissions([])
+      return
+    }
+
+    const q = query(
+      collection(db, 'submissions'),
+      where('status', '==', 'pending'),
+      orderBy('createdAt', 'desc')
+    )
+
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const submissions: Submission[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        userId: doc.data().userId,
+        animationData: doc.data().animationData,
+        createdAt: (doc.data().createdAt as Timestamp).toDate(),
+        status: doc.data().status,
+      }))
+
+      // Fetch emails for all users if admin
+      if (submissions.length > 0) {
+        try {
+          const userIds = [...new Set(submissions.map((s) => s.userId))]
+          const emailMap = await getUserEmails(userIds)
+
+          // Attach emails to submissions
+          submissions.forEach((submission) => {
+            submission.userEmail = emailMap[submission.userId] || 'unknown'
+          })
+        } catch (error) {
+          console.error('Failed to fetch user emails:', error)
+        }
+      }
+
+      setPendingSubmissions(submissions)
+    })
+
+    return unsubscribe
+  }, [userIsAdmin])
+
+  useEffect(() => {
+    const q = query(collection(db, 'gallery'), orderBy('approvedAt', 'desc'))
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const items: GalleryItem[] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        userId: doc.data().userId,
+        animationData: doc.data().animationData,
+        approvedAt: (doc.data().approvedAt as Timestamp).toDate(),
+        approvedBy: doc.data().approvedBy,
+      }))
+      setGalleryItems(items)
+    })
+
+    return unsubscribe
+  }, [])
 
   // Update URL when state changes
   useEffect(() => {
@@ -91,25 +237,76 @@ export const App = () => {
     setState((prevState) => ({ ...prevState, currentFrameIndex: index }))
   }
 
-  return [
-    <Grid
-      frame={state.frames[state.currentFrameIndex]}
-      palette={state.palette}
-      selectedColorIndex={state.selectedColorIndex}
-      onPixelClick={handlePixelClick}
-    />,
-    <Palette
-      palette={state.palette}
-      selectedColorIndex={state.selectedColorIndex}
-      onColorSelect={handleColorSelect}
-      onColorChange={handleColorChange}
-    />,
-    <FrameSelector
-      frames={state.frames}
-      palette={state.palette}
-      currentFrameIndex={state.currentFrameIndex}
-      onFrameSelect={handleFrameSelect}
-    />,
-    <Preview frames={state.frames} palette={state.palette} />,
-  ]
+  const handleSubmit = async () => {
+    const currentHash = window.location.hash.slice(1)
+    if (!currentHash) {
+      throw new Error('No animation data to submit')
+    }
+    await submitAnimation(currentHash)
+  }
+
+  const handleApprove = async () => {
+    if (!selectedSubmission) return
+    await approveSubmission(selectedSubmission.id)
+    setSelectedSubmission(null)
+  }
+
+  const handleReject = async () => {
+    if (!selectedSubmission) return
+    await rejectSubmission(selectedSubmission.id)
+    setSelectedSubmission(null)
+  }
+
+  return (
+    <>
+      <Auth user={user} />
+      <div className="main-grid">
+        <div className="left-column">
+          <Grid
+            frame={state.frames[state.currentFrameIndex]}
+            palette={state.palette}
+            selectedColorIndex={state.selectedColorIndex}
+            onPixelClick={handlePixelClick}
+          />
+          <FrameSelector
+            frames={state.frames}
+            palette={state.palette}
+            currentFrameIndex={state.currentFrameIndex}
+            onFrameSelect={handleFrameSelect}
+          />
+          {user && <MyQueue submissions={mySubmissions} />}
+        </div>
+        <div className="right-column">
+          <Palette
+            palette={state.palette}
+            selectedColorIndex={state.selectedColorIndex}
+            onColorSelect={handleColorSelect}
+            onColorChange={handleColorChange}
+          />
+          <Preview frames={state.frames} palette={state.palette} />
+          {user && (
+            <SubmitButton
+              disabled={pendingCount >= 8}
+              onSubmit={handleSubmit}
+            />
+          )}
+        </div>
+      </div>
+      {userIsAdmin && pendingSubmissions.length > 0 && (
+        <PendingReview
+          submissions={pendingSubmissions}
+          onSubmissionClick={setSelectedSubmission}
+        />
+      )}
+      <Gallery title="Public Gallery" items={galleryItems} />
+      {selectedSubmission && (
+        <ApprovalModal
+          submission={selectedSubmission}
+          onClose={() => setSelectedSubmission(null)}
+          onApprove={handleApprove}
+          onReject={handleReject}
+        />
+      )}
+    </>
+  )
 }
