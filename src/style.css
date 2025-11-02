@@ -5,7 +5,7 @@
 }
 
 :root {
-  --unit: 50px;
+  --unit: 64px;
 }
 
 body {
@@ -285,7 +285,7 @@ body {
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(9, var(--unit));
-  gap: 0;
+  gap: var(--unit);
 }
 
 .gallery-item {
