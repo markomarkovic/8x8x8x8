@@ -27,9 +27,9 @@ type MyQueueProps = {
 
 export function MyQueue({ submissions }: MyQueueProps) {
   // Separate pending from approved/rejected
-  const pending = submissions.filter(s => s.status === 'pending')
+  const pending = submissions.filter((s) => s.status === 'pending')
   const completed = submissions.filter(
-    s => s.status === 'approved' || s.status === 'rejected'
+    (s) => s.status === 'approved' || s.status === 'rejected'
   )
 
   // Create 8 slots for pending (fill remaining with null for empty slots)

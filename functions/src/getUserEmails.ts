@@ -29,9 +29,7 @@ export const getUserEmails = onCall(async (request) => {
   }
 
   try {
-    const users = await admin.auth().getUsers(
-      userIds.map((uid) => ({ uid }))
-    )
+    const users = await admin.auth().getUsers(userIds.map((uid) => ({ uid })))
 
     const emailMap: Record<string, string> = {}
     users.users.forEach((user) => {
