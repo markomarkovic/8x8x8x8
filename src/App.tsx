@@ -352,7 +352,7 @@ export const App = () => {
           onSubmissionClick={setSelectedSubmission}
         />
       )}
-      <Gallery title="Public Gallery" items={galleryItems} />
+      <Gallery items={galleryItems} />
       {selectedSubmission && (
         <ApprovalModal
           submission={selectedSubmission}

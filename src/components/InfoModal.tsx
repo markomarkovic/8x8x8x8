@@ -60,9 +60,7 @@ export function InfoModal({ onClose }: InfoModalProps) {
               <li>
                 Use browser <strong>forward button</strong> to redo changes
               </li>
-              <li>
-                Every change is saved in the browser history via the URL
-              </li>
+              <li>Every change is saved in the browser history via the URL</li>
             </ul>
           </section>
 
