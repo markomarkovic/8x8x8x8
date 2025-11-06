@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Env
+.env*
+!.env.example
+
 # Firebase
 .firebase
 firebase-debug.log
