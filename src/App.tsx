@@ -9,7 +9,7 @@ import {
   Timestamp,
   where,
 } from 'firebase/firestore'
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useRef, useState } from 'preact/hooks'
 import {
   approveSubmission,
   getUserEmails,
@@ -56,6 +56,7 @@ export const App = () => {
     useState<Submission | null>(null)
   const [showInfoModal, setShowInfoModal] = useState(false)
   const [clipboard, setClipboard] = useState<Frame | null>(null)
+  const isInitialLoadRef = useRef(true)
 
   const userIsAdmin = isAdmin
   const pendingCount = mySubmissions.filter(
@@ -166,8 +167,11 @@ export const App = () => {
     return unsubscribe
   }, [])
 
-  // Update URL when state changes
+  // Update URL when state changes (skip initial load to prevent overwriting compressed URLs)
   useEffect(() => {
+    if (isInitialLoadRef.current) {
+      return
+    }
     updateURL(state)
   }, [state])
 
@@ -185,6 +189,8 @@ export const App = () => {
           selectedColorIndex: prevState.selectedColorIndex,
           currentFrameIndex: prevState.currentFrameIndex,
         }))
+        // Mark initial load as complete after successfully loading state from URL
+        isInitialLoadRef.current = false
       }
     }
 
@@ -208,6 +214,10 @@ export const App = () => {
     const pendingState = getPendingDecodedState()
     if (pendingState) {
       setState(pendingState)
+      isInitialLoadRef.current = false
+    } else if (!window.location.hash) {
+      // No URL hash means we're starting fresh - mark initial load complete
+      isInitialLoadRef.current = false
     }
 
     return () => {
