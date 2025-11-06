@@ -208,9 +208,29 @@ The workflow is already configured in `.github/workflows/deploy-firebase.yml` an
 - Deploy to Firebase automatically
 - Can also be triggered manually from GitHub Actions UI
 
-### B. Add Firebase Service Account Secret to GitHub
+### B. Add Required Secrets to GitHub
 
-1. **Generate Firebase Service Account Key:**
+You need to add **7 secrets** total: 6 Firebase config variables and 1 service account.
+
+1. **Add Firebase Configuration Secrets:**
+
+   - Go to your GitHub repository: `https://github.com/YOUR_USERNAME/8x8x8x8`
+   - Click **Settings** (top menu)
+   - In the left sidebar, click **Secrets and variables** → **Actions**
+   - Click **New repository secret** for each of the following:
+
+   | Secret Name | Value Source |
+   |-------------|--------------|
+   | `VITE_FIREBASE_API_KEY` | From Firebase Console → Project Settings → General → Your apps → SDK setup and configuration |
+   | `VITE_FIREBASE_AUTH_DOMAIN` | Same as above |
+   | `VITE_FIREBASE_PROJECT_ID` | Same as above |
+   | `VITE_FIREBASE_STORAGE_BUCKET` | Same as above |
+   | `VITE_FIREBASE_MESSAGING_SENDER_ID` | Same as above |
+   | `VITE_FIREBASE_APP_ID` | Same as above |
+
+   These values should match what you put in your `.env.local` file (Step 5).
+
+2. **Add Firebase Service Account Secret:**
 
    - Go to [Firebase Console](https://console.firebase.google.com/)
    - Select your project: **eightxeightxeightxeight**
@@ -219,22 +239,16 @@ The workflow is already configured in `.github/workflows/deploy-firebase.yml` an
    - Click **Generate new private key**
    - Click **Generate key** to download the JSON file
    - Open the downloaded JSON file and copy its **entire contents**
-
-2. **Add Secret to GitHub Repository:**
-
-   - Go to your GitHub repository: `https://github.com/YOUR_USERNAME/8x8x8x8`
-   - Click **Settings** (top menu)
-   - In the left sidebar, click **Secrets and variables** → **Actions**
-   - Click **New repository secret**
+   - Back in GitHub: Click **New repository secret**
    - Name: `FIREBASE_SERVICE_ACCOUNT`
-   - Value: Paste the entire JSON content from step 1
+   - Value: Paste the entire JSON content
    - Click **Add secret**
 
 3. **Commit and Push the Workflow:**
 
    ```bash
    git add .github/workflows/deploy-firebase.yml
-   git commit -m "Add GitHub Actions deployment workflow"
+   git commit -m "feat: add GitHub Actions deployment workflow"
    git push origin main
    ```
 
