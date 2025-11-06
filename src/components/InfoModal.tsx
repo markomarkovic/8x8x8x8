@@ -7,7 +7,7 @@ export function InfoModal({ onClose }: InfoModalProps) {
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal info-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>How to Use 8x8x8x8</h3>
+          <h3>How to Use 8×8×8×8</h3>
           <button className="modal-close" onClick={onClose}>
             ×
           </button>
