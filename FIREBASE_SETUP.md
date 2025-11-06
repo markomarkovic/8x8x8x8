@@ -195,6 +195,72 @@ pnpm build
 firebase deploy --only hosting
 ```
 
+## Step 10: Set Up Automated GitHub Actions Deployment (Optional)
+
+Automate deployments on every push to the `main` branch using GitHub Actions.
+
+### A. GitHub Action Workflow
+
+The workflow is already configured in `.github/workflows/deploy-firebase.yml` and will:
+
+- Run on every push to `main` branch
+- Build your project (hosting + functions)
+- Deploy to Firebase automatically
+- Can also be triggered manually from GitHub Actions UI
+
+### B. Add Firebase Service Account Secret to GitHub
+
+1. **Generate Firebase Service Account Key:**
+
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Select your project: **eightxeightxeightxeight**
+   - Click the gear icon ⚙️ → **Project settings**
+   - Go to the **Service accounts** tab
+   - Click **Generate new private key**
+   - Click **Generate key** to download the JSON file
+   - Open the downloaded JSON file and copy its **entire contents**
+
+2. **Add Secret to GitHub Repository:**
+
+   - Go to your GitHub repository: `https://github.com/YOUR_USERNAME/8x8x8x8`
+   - Click **Settings** (top menu)
+   - In the left sidebar, click **Secrets and variables** → **Actions**
+   - Click **New repository secret**
+   - Name: `FIREBASE_SERVICE_ACCOUNT`
+   - Value: Paste the entire JSON content from step 1
+   - Click **Add secret**
+
+3. **Commit and Push the Workflow:**
+
+   ```bash
+   git add .github/workflows/deploy-firebase.yml
+   git commit -m "Add GitHub Actions deployment workflow"
+   git push origin main
+   ```
+
+4. **Verify Deployment:**
+   - Go to your repository on GitHub
+   - Click the **Actions** tab
+   - You should see the deployment workflow running
+   - Once complete, your app will be deployed to Firebase
+
+**Note:** The `GITHUB_TOKEN` is automatically provided by GitHub Actions, so you don't need to add it manually.
+
+### Alternative: Using Firebase Token (Legacy Method)
+
+If you prefer using a Firebase token instead of a service account:
+
+```bash
+firebase login:ci
+```
+
+Copy the token, then:
+
+- Add it as a GitHub secret named `FIREBASE_TOKEN`
+- Update the workflow to use `firebase deploy` with the token instead
+
+---
+
 ## Testing the Gallery Feature
 
 ### As a Regular User
