@@ -21,7 +21,6 @@ export function PendingReview({
 
   return (
     <Gallery
-      title="Pending Review (Admin)"
       items={galleryItems}
       onItemClick={(item) => {
         const submission = submissions.find((s) => s.id === item.id)
@@ -29,7 +28,7 @@ export function PendingReview({
           onSubmissionClick(submission)
         }
       }}
-      highlight={true}
+      highlight
     />
   )
 }
