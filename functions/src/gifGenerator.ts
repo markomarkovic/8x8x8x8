@@ -1,6 +1,6 @@
 // @ts-ignore - gifenc doesn't have TypeScript definitions
 import { applyPalette, GIFEncoder, quantize } from 'gifenc'
-import type { AnimationData } from './encoding-shared'
+import type { AnimationData } from './decoding'
 
 /**
  * Converts hex color string to RGB array

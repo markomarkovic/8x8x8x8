@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin'
 import { onRequest } from 'firebase-functions/v2/https'
-import { decodeAnimationData } from './encoding-shared'
+import { decodeAnimationData } from './decoding'
 import { generateGif } from './gifGenerator'
 
 /**
