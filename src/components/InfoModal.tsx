@@ -37,6 +37,21 @@ export function InfoModal({ onClose }: InfoModalProps) {
           </section>
 
           <section>
+            <h4>Copy / Paste Frames</h4>
+            <ul>
+              <li>
+                Press <strong>Ctrl+C</strong> (or <strong>Cmd+C</strong> on Mac)
+                to copy the current frame
+              </li>
+              <li>
+                Select a different frame and press <strong>Ctrl+V</strong> (or{' '}
+                <strong>Cmd+V</strong> on Mac) to paste
+              </li>
+              <li>Duplicate frames or create variations easily</li>
+            </ul>
+          </section>
+
+          <section>
             <h4>Undo / Redo</h4>
             <ul>
               <li>

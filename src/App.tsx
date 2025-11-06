@@ -39,6 +39,7 @@ import { auth, db } from './firebase'
 import type {
   AppState,
   ColorIndex,
+  Frame,
   GalleryItem,
   Palette as PaletteType,
   Submission,
@@ -54,6 +55,7 @@ export const App = () => {
   const [selectedSubmission, setSelectedSubmission] =
     useState<Submission | null>(null)
   const [showInfoModal, setShowInfoModal] = useState(false)
+  const [clipboard, setClipboard] = useState<Frame | null>(null)
 
   const userIsAdmin = isAdmin
   const pendingCount = mySubmissions.filter(
@@ -213,6 +215,55 @@ export const App = () => {
       window.removeEventListener('statedecompressed', handleStateDecompressed)
     }
   }, [])
+
+  // Handle copy/paste keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check for Ctrl+C or Cmd+C (copy)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        // Don't prevent default if there's actual text selected (allow normal copy)
+        const selection = window.getSelection()
+        const hasTextSelected =
+          selection && !selection.isCollapsed && selection.toString().length > 0
+        if (hasTextSelected) {
+          return
+        }
+
+        // Copy current frame to clipboard
+        e.preventDefault()
+        const currentFrame = state.frames[state.currentFrameIndex]
+        setClipboard([...currentFrame] as Frame)
+      }
+
+      // Check for Ctrl+V or Cmd+V (paste)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        // Don't prevent default if we're focused on an input element
+        const target = e.target as HTMLElement
+        if (
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable
+        ) {
+          return
+        }
+
+        if (clipboard) {
+          e.preventDefault()
+          setState((prevState) => {
+            const newFrames = [...prevState.frames]
+            newFrames[prevState.currentFrameIndex] = [...clipboard] as Frame
+            return {
+              ...prevState,
+              frames: newFrames as typeof prevState.frames,
+            }
+          })
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [state.frames, state.currentFrameIndex, clipboard])
 
   const handlePixelClick = (pixelIndex: number) => {
     setState((prevState) => {
