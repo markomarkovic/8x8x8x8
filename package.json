@@ -1,7 +1,6 @@
 {
   "name": "8x8x8x8",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
