@@ -115,6 +115,9 @@ export function InfoModal({ onClose }: InfoModalProps) {
                   />
                 </a>
               </li>
+              <li style={{ fontSize: '0.8em', opacity: 0.6, marginTop: '8px' }}>
+                Version: {__PACKAGE_VERSION__} / {__GIT_COMMIT_HASH__}
+              </li>
             </ul>
           </section>
         </div>
