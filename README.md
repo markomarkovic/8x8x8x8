@@ -1,6 +1,12 @@
-# 8x8x8x8
+# 8×8×8×8
 
 A pixel art animation editor for creating 8×8 pixel animations with 8 frames and an 8-color palette.
+
+## 🎨 [Try it live!](https://eightxeightxeightxeight.web.app)
+
+<a href="https://eightxeightxeightxeight.web.app/#v3:H4sIAAAAAAAAAzWP2xXFIAgEWxrEPChHQfov4RKTuz8Ie1jGdaZmTg3LvJn56HbIjItPxlqGi41z_mfy6exv7Ye-vX71759t6_rEzW1Yx0_ciYOYgonMcqxejhvRiWDtqKYFYMaomRDOOliTLAST9qwNYZZZmEIepEsTUX0cp4iXsoLsZC2oqDCoz1XgMOp6zJ3pZJ2b0uoc10ap5NCN0lkFqZX8AzUzNF8yAQAA">
+  <img src="https://eightxeightxeightxeight.web.app/gifs/v3:H4sIAAAAAAAAAzWP2xXFIAgEWxrEPChHQfov4RKTuz8Ie1jGdaZmTg3LvJn56HbIjItPxlqGi41z_mfy6exv7Ye-vX71759t6_rEzW1Yx0_ciYOYgonMcqxejhvRiWDtqKYFYMaomRDOOliTLAST9qwNYZZZmEIepEsTUX0cp4iXsoLsZC2oqDCoz1XgMOp6zJ3pZJ2b0uoc10ap5NCN0lkFqZX8AzUzNF8yAQAA.gif" alt="A fish in a tank" width="64" style="image-rendering: pixelated; image-rendering: crisp-edges;">
+</a>
 
 ## Features
 
@@ -16,34 +22,6 @@ A pixel art animation editor for creating 8×8 pixel animations with 8 frames an
 - **Google authentication** - sign in to submit animations
 - **Submission queue** - track your submitted animations (up to 8 pending, unlimited approved/rejected)
 - **Admin review** - approve or reject submissions (admin only)
-
-## How to Use
-
-### Drawing
-
-1. Click a color in the palette to select it
-2. Click pixels in the grid to paint with the selected color
-3. Switch between frames using the frame selector at the bottom
-
-### Colors
-
-- **Single click** on a palette color to select it for drawing
-- **Double click** on a palette color to edit it using the color picker
-
-### Sharing
-
-Your animation is automatically encoded in the URL. Just copy and share the URL to share your animation!
-
-### Gallery Submission
-
-1. Sign in with your Google account (button in top-right corner)
-2. Create your animation
-3. Click the "Submit" button (appears below your queue when logged in)
-4. Your submission appears in your queue with a yellow outline (pending)
-5. Wait for admin approval
-6. Once approved, your animation appears in the public gallery with a green outline in your queue
-
-**Limits:** You can have up to 8 pending submissions at a time. Approved and rejected submissions are unlimited and appear in your queue below your pending slots.
 
 ## Development
 
