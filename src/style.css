@@ -82,7 +82,7 @@ body {
   gap: 0;
 }
 
-.palette>div {
+.palette > div {
   width: var(--unit);
   height: var(--unit);
   cursor: pointer;
@@ -92,15 +92,15 @@ body {
   outline-offset: -1px;
 }
 
-.palette>div:hover {
+.palette > div:hover {
   outline-color: #888;
 }
 
-.palette>div.selected {
+.palette > div.selected {
   outline-color: #fff;
 }
 
-.palette>div input[type='color'] {
+.palette > div input[type='color'] {
   position: absolute;
   opacity: 0;
   width: 0;
@@ -136,12 +136,12 @@ body {
   height: calc(var(--unit) * 8);
 }
 
-.grid>div {
+.grid > div {
   cursor: pointer;
   transition: opacity 0.1s;
 }
 
-.grid>div:hover {
+.grid > div:hover {
   opacity: 0.8;
 }
 
@@ -164,7 +164,7 @@ body {
   gap: 0;
 }
 
-.frame-selector>div {
+.frame-selector > div {
   width: var(--unit);
   height: var(--unit);
   cursor: pointer;
@@ -174,15 +174,15 @@ body {
   outline-offset: -1px;
 }
 
-.frame-selector>div:hover {
+.frame-selector > div:hover {
   outline-color: #888;
 }
 
-.frame-selector>div.selected {
+.frame-selector > div.selected {
   outline-color: #fff;
 }
 
-.frame-selector>div canvas {
+.frame-selector > div canvas {
   width: 100%;
   height: 100%;
   image-rendering: pixelated;
