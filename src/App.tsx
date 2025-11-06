@@ -21,6 +21,8 @@ import { Auth } from './components/Auth'
 import { FrameSelector } from './components/FrameSelector'
 import { Gallery } from './components/Gallery'
 import { Grid } from './components/Grid'
+import { InfoButton } from './components/InfoButton'
+import { InfoModal } from './components/InfoModal'
 import { MyQueue } from './components/MyQueue'
 import { Palette } from './components/Palette'
 import { PendingReview } from './components/PendingReview'
@@ -51,6 +53,7 @@ export const App = () => {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([])
   const [selectedSubmission, setSelectedSubmission] =
     useState<Submission | null>(null)
+  const [showInfoModal, setShowInfoModal] = useState(false)
 
   const userIsAdmin = isAdmin
   const pendingCount = mySubmissions.filter(
@@ -307,6 +310,8 @@ export const App = () => {
           onReject={handleReject}
         />
       )}
+      <InfoButton onClick={() => setShowInfoModal(true)} />
+      {showInfoModal && <InfoModal onClose={() => setShowInfoModal(false)} />}
     </>
   )
 }
