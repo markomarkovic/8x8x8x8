@@ -15,6 +15,8 @@ export const Palette = ({
   onColorChange,
 }: PaletteProps) => {
   const colorInputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const longPressTimerRef = useRef<number | null>(null)
+  const longPressTriggeredRef = useRef(false)
 
   const handleColorInputChange = (index: ColorIndex, event: Event) => {
     const input = event.target as HTMLInputElement
@@ -22,13 +24,39 @@ export const Palette = ({
     onColorChange(index, hex)
   }
 
+  const openColorPicker = (colorIndex: ColorIndex) => {
+    colorInputRefs.current[colorIndex]?.click()
+  }
+
   const handleSwatchClick = (colorIndex: ColorIndex) => {
-    onColorSelect(colorIndex)
+    // Don't select color if long-press was triggered
+    if (!longPressTriggeredRef.current) {
+      onColorSelect(colorIndex)
+    }
+    longPressTriggeredRef.current = false
   }
 
   const handleSwatchDoubleClick = (colorIndex: ColorIndex) => {
-    // Trigger the hidden color picker
-    colorInputRefs.current[colorIndex]?.click()
+    openColorPicker(colorIndex)
+  }
+
+  const handleTouchStart = (colorIndex: ColorIndex) => {
+    longPressTriggeredRef.current = false
+    longPressTimerRef.current = window.setTimeout(() => {
+      longPressTriggeredRef.current = true
+      openColorPicker(colorIndex)
+      // Haptic feedback if available
+      if (navigator.vibrate) {
+        navigator.vibrate(50)
+      }
+    }, 500) // 500ms long-press
+  }
+
+  const handleTouchEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current)
+      longPressTimerRef.current = null
+    }
   }
 
   return (
@@ -42,6 +70,9 @@ export const Palette = ({
             style={{ backgroundColor: `#${color}` }}
             onClick={() => handleSwatchClick(colorIndex)}
             onDblClick={() => handleSwatchDoubleClick(colorIndex)}
+            onTouchStart={() => handleTouchStart(colorIndex)}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
           >
             <input
               ref={(el) => {
