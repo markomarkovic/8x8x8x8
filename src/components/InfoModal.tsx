@@ -19,8 +19,12 @@ export function InfoModal({ onClose }: InfoModalProps) {
               <li>Click on the 8×8 grid to draw pixels</li>
               <li>Select colors from the palette on the right</li>
               <li>
-                Double-click any palette color to customize it with a color
-                picker
+                <strong>Desktop:</strong> Double-click any palette color to
+                customize it
+              </li>
+              <li>
+                <strong>Touch:</strong> Long-press (500ms) any palette color to
+                customize it
               </li>
             </ul>
           </section>
