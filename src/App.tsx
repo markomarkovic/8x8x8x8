@@ -372,7 +372,9 @@ export const App = () => {
         />
       )}
       <InfoButton onClick={() => setShowInfoModal(true)} />
-      {showInfoModal && <InfoModal onClose={() => setShowInfoModal(false)} />}
+      {showInfoModal && (
+        <InfoModal state={state} onClose={() => setShowInfoModal(false)} />
+      )}
     </>
   )
 }

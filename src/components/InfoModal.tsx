@@ -1,8 +1,35 @@
+import { useState } from 'preact/hooks'
+import { encodeToHex } from '../hex-encoder'
+import type { AppState } from '../types'
+
 type InfoModalProps = {
+  state: AppState
   onClose: () => void
 }
 
-export function InfoModal({ onClose }: InfoModalProps) {
+export function InfoModal({ state, onClose }: InfoModalProps) {
+  const [copySuccess, setCopySuccess] = useState(false)
+
+  const hex = encodeToHex(state)
+
+  const handleCopyHex = async () => {
+    try {
+      await navigator.clipboard.writeText(hex)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = hex
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    }
+  }
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal info-modal" onClick={(e) => e.stopPropagation()}>
@@ -123,6 +150,22 @@ export function InfoModal({ onClose }: InfoModalProps) {
                 Version: {__PACKAGE_VERSION__} / {__GIT_COMMIT_HASH__}
               </li>
             </ul>
+          </section>
+
+          <section>
+            <h4>Hardware Export (Microcontroller)</h4>
+            <p style={{ fontSize: '0.9em', marginBottom: '8px' }}>
+              Use this hex string for LED matrix hardware playback:
+            </p>
+            <div className="hex-display-container">
+              <code className="hex-code">{hex}</code>
+            </div>
+            <button
+              onClick={handleCopyHex}
+              className={`hex-copy-button${copySuccess ? ' success' : ''}`}
+            >
+              {copySuccess ? '✓ Copied!' : 'Copy Hex String'}
+            </button>
           </section>
         </div>
       </div>

@@ -532,3 +532,40 @@ body {
   display: inline-block;
   vertical-align: middle;
 }
+
+/* Hardware Export */
+.hex-display-container {
+  position: relative;
+  background-color: #1a1a1a;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.hex-code {
+  font-size: 0.7em;
+  word-break: break-all;
+  display: block;
+  max-height: 60px;
+  overflow: auto;
+  color: #88ff88;
+  font-family: monospace;
+}
+
+.hex-copy-button {
+  padding: 6px 12px;
+  background: #444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.hex-copy-button:hover {
+  background: #555;
+}
+
+.hex-copy-button.success {
+  background: #228822;
+}
