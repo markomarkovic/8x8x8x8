@@ -21,7 +21,8 @@
     "pio:upload": "cd seeduino_xiao && uv tool run platformio run --target upload",
     "pio:clean": "cd seeduino_xiao && uv tool run platformio run --target clean",
     "pio:monitor": "cd seeduino_xiao && uv tool run platformio device monitor",
-    "pio:build-upload": "cd seeduino_xiao && uv tool run platformio run --target upload"
+    "pio:build-upload": "cd seeduino_xiao && uv tool run platformio run --target upload",
+    "pio:all": "cd seeduino_xiao && uv tool run platformio run --target upload --target monitor"
   },
   "devDependencies": {
     "prettier": "3.6.2",
