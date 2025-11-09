@@ -55,6 +55,24 @@ pnpm functions:logs
 pnpm deploy
 ```
 
+### PlatformIO (Microcontroller)
+
+```bash
+# Build firmware for Seeeduino XIAO
+pnpm pio:build
+
+# Upload to microcontroller
+pnpm pio:upload
+
+# Build and upload in one command
+pnpm pio:build-upload
+
+# Open serial monitor
+pnpm pio:monitor
+```
+
+See [PLATFORMIO_SETUP.md](PLATFORMIO_SETUP.md) for detailed setup instructions.
+
 ## Firebase Setup (Optional)
 
 The gallery feature requires Firebase. The app works fully offline without it.
@@ -80,6 +98,7 @@ The gallery feature requires Firebase. The app works fully offline without it.
 - [ENCODING_FORMATS.md](ENCODING_FORMATS.md) - Technical details on URL compression formats
 - [FIREBASE_SETUP.md](FIREBASE_SETUP.md) - Step-by-step Firebase setup guide
 - [COST_SAFETY.md](COST_SAFETY.md) - Firebase cost analysis and budget protection
+- [PLATFORMIO_SETUP.md](PLATFORMIO_SETUP.md) - Seeeduino XIAO microcontroller setup and VS Code configuration
 - [AGENTS.md](AGENTS.md) - Instructions for AI agents working with this codebase
 
 ## Contributing
