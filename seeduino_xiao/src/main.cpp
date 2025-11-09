@@ -8,10 +8,16 @@
 #define MATRIX_HEIGHT 8
 #define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
 #define BRIGHTNESS 32 // 0-255, start dim for testing
-#define FPS 8
-#define FRAME_DELAY (1000 / FPS)    // 125ms per frame
-#define ANIMATION_DURATION_SEC 8    // Play each animation for 8 seconds (64 frames)
-#define NUM_FRAMES_PER_ANIMATION 64 // 8 seconds at 8 FPS
+
+// Animation Configuration
+#define NUM_FRAMES 8                // Number of frames per animation
+#define FPS 8                       // Playback speed
+#define FRAME_DELAY (1000 / FPS)    // Delay per frame in ms
+#define ANIMATION_DURATION_SEC 8    // Duration each animation plays
+#define NUM_FRAMES_PER_ANIMATION (FPS * ANIMATION_DURATION_SEC)
+
+// Color Configuration
+#define BYTES_PER_COLOR 3 // RGB
 
 Adafruit_NeoPixel matrix(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -44,8 +50,11 @@ void setup()
   // Initialize shuffle
   shuffleAnimations();
 
-  Serial.println("Matrix initialized on pin 10");
-  Serial.println("Starting random playback (8 seconds per animation)...");
+  Serial.print("Matrix initialized on pin ");
+  Serial.println(LED_PIN);
+  Serial.print("Starting random playback (");
+  Serial.print(ANIMATION_DURATION_SEC);
+  Serial.println(" seconds per animation)...");
 }
 
 void loop()
@@ -58,7 +67,7 @@ void loop()
   Serial.print(" of ");
   Serial.println(NUM_ANIMATIONS);
 
-  // Play the animation (64 frames = 8 seconds)
+  // Play the animation
   playAnimation(animIndex);
 
   // Move to next animation
@@ -95,18 +104,19 @@ void shuffleAnimations()
 // Get RGB color from palette stored in PROGMEM
 uint32_t getPaletteColor(uint8_t animIndex, uint8_t colorIdx)
 {
-  uint8_t r = pgm_read_byte(&PALETTES[animIndex][colorIdx * 3]);
-  uint8_t g = pgm_read_byte(&PALETTES[animIndex][colorIdx * 3 + 1]);
-  uint8_t b = pgm_read_byte(&PALETTES[animIndex][colorIdx * 3 + 2]);
+  uint16_t offset = colorIdx * BYTES_PER_COLOR;
+  uint8_t r = pgm_read_byte(&PALETTES[animIndex][offset]);
+  uint8_t g = pgm_read_byte(&PALETTES[animIndex][offset + 1]);
+  uint8_t b = pgm_read_byte(&PALETTES[animIndex][offset + 2]);
   return matrix.Color(r, g, b);
 }
 
 // Display a single frame from an animation
 void displayFrame(uint8_t animIndex, uint8_t frameIndex)
 {
-  uint16_t frameOffset = frameIndex * 64;
+  uint16_t frameOffset = frameIndex * NUM_LEDS;
 
-  for (uint8_t pixelIdx = 0; pixelIdx < 64; pixelIdx++)
+  for (uint8_t pixelIdx = 0; pixelIdx < NUM_LEDS; pixelIdx++)
   {
     uint8_t colorIdx = pgm_read_byte(&FRAMES[animIndex][frameOffset + pixelIdx]);
     uint32_t color = getPaletteColor(animIndex, colorIdx);
@@ -116,13 +126,13 @@ void displayFrame(uint8_t animIndex, uint8_t frameIndex)
   matrix.show();
 }
 
-// Play an animation for 64 frames (8 seconds at 8 FPS)
+// Play an animation for the configured duration
 void playAnimation(uint8_t animIndex)
 {
-  // Loop through all 8 frames, 8 times = 64 total frames = 8 seconds
-  for (uint8_t cycle = 0; cycle < 8; cycle++)
+  // Loop through all frames multiple times to reach desired duration
+  for (uint8_t cycle = 0; cycle < ANIMATION_DURATION_SEC; cycle++)
   {
-    for (uint8_t frameIdx = 0; frameIdx < 8; frameIdx++)
+    for (uint8_t frameIdx = 0; frameIdx < NUM_FRAMES; frameIdx++)
     {
       displayFrame(animIndex, frameIdx);
       delay(FRAME_DELAY);
