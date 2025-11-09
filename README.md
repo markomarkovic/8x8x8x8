@@ -18,6 +18,7 @@ A pixel art animation editor for creating 8×8 pixel animations with 8 frames an
 - **Animated preview** at 8 FPS
 - **Animated favicon** that matches your creation
 - **Single-file output** - no external dependencies
+- **Hardware export** - export animations to microcontroller (Seeeduino XIAO + WS2812B LED matrix)
 - **Public gallery** - submit your animations to a shared gallery (requires Firebase)
 - **Google authentication** - sign in to submit animations
 - **Submission queue** - track your submitted animations (up to 8 pending, unlimited approved/rejected)
@@ -55,23 +56,30 @@ pnpm functions:logs
 pnpm deploy
 ```
 
-### PlatformIO (Microcontroller)
+### Hardware / Microcontroller
+
+Export your animations to physical LED hardware!
+
+**Hardware Requirements:**
+- Seeeduino XIAO (SAMD21 microcontroller)
+- WS2812B 8×8 LED matrix
+- USB-C cable
+
+**Workflow:**
+1. Create animation in web app
+2. Copy hex string from Info Modal → Hardware Export
+3. Add to `seeduino_xiao/animations.txt`
+4. Build and upload:
 
 ```bash
-# Build firmware for Seeeduino XIAO
-pnpm pio:build
-
-# Upload to microcontroller
-pnpm pio:upload
-
-# Build and upload in one command
+# Build and upload firmware
 pnpm pio:build-upload
 
-# Open serial monitor
-pnpm pio:monitor
+# Build, upload, and monitor
+pnpm pio:all
 ```
 
-See [PLATFORMIO_SETUP.md](PLATFORMIO_SETUP.md) for detailed setup instructions.
+See [PLATFORMIO_SETUP.md](PLATFORMIO_SETUP.md) for detailed hardware setup, wiring diagrams, and animation workflow.
 
 ## Firebase Setup (Optional)
 
