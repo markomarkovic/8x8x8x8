@@ -1,129 +1,131 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
+#include "animations.h"
 
 // LED Matrix Configuration
 #define LED_PIN 10
 #define MATRIX_WIDTH 8
 #define MATRIX_HEIGHT 8
 #define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
-#define BRIGHTNESS 32  // 0-255, start dim for testing
+#define BRIGHTNESS 32 // 0-255, start dim for testing
 #define FPS 8
-#define FRAME_DELAY (1000 / FPS)  // 125ms per frame
+#define FRAME_DELAY (1000 / FPS)    // 125ms per frame
+#define ANIMATION_DURATION_SEC 8    // Play each animation for 8 seconds (64 frames)
+#define NUM_FRAMES_PER_ANIMATION 64 // 8 seconds at 8 FPS
 
 Adafruit_NeoPixel matrix(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-// Function declarations
-void solidColor(uint32_t color, int wait);
-void rainbowWave(int offset);
-void pixelChase(uint32_t color, int wait);
-void rowScan(uint32_t color, int wait);
-void columnScan(uint32_t color, int wait);
+// Animation playback state
+uint8_t animationOrder[NUM_ANIMATIONS];
+uint8_t currentAnimationIndex = 0;
 
-void setup() {
+// Function declarations
+void shuffleAnimations();
+uint32_t getPaletteColor(uint8_t animIndex, uint8_t colorIdx);
+void playAnimation(uint8_t animIndex);
+void displayFrame(uint8_t animIndex, uint8_t frameIndex);
+
+void setup()
+{
   Serial.begin(115200);
   delay(100);
-  Serial.println("8x8 LED Matrix Test");
+  Serial.println("8x8x8x8 LED Matrix Player");
+  Serial.print("Loaded ");
+  Serial.print(NUM_ANIMATIONS);
+  Serial.println(" animations");
 
   matrix.begin();
   matrix.setBrightness(BRIGHTNESS);
   matrix.show(); // Initialize all pixels to 'off'
 
+  // Seed random number generator with analog noise
+  randomSeed(analogRead(0) + micros());
+
+  // Initialize shuffle
+  shuffleAnimations();
+
   Serial.println("Matrix initialized on pin 10");
+  Serial.println("Starting random playback (8 seconds per animation)...");
 }
 
-void loop() {
-  // Test Pattern 1: Solid Colors (8 frames each = 1 second)
-  Serial.println("Test 1: Red");
-  solidColor(matrix.Color(255, 0, 0), FRAME_DELAY * 8);
+void loop()
+{
+  // Get current animation index from shuffled order
+  uint8_t animIndex = animationOrder[currentAnimationIndex];
 
-  Serial.println("Test 2: Green");
-  solidColor(matrix.Color(0, 255, 0), FRAME_DELAY * 8);
+  Serial.print("Playing animation ");
+  Serial.print(animIndex + 1);
+  Serial.print(" of ");
+  Serial.println(NUM_ANIMATIONS);
 
-  Serial.println("Test 3: Blue");
-  solidColor(matrix.Color(0, 0, 255), FRAME_DELAY * 8);
+  // Play the animation (64 frames = 8 seconds)
+  playAnimation(animIndex);
 
-  Serial.println("Test 4: White");
-  solidColor(matrix.Color(255, 255, 255), FRAME_DELAY * 8);
+  // Move to next animation
+  currentAnimationIndex++;
 
-  // Test Pattern 2: Rainbow Wave (64 frames = 8 seconds)
-  Serial.println("Test 5: Rainbow Wave @ 8 FPS");
-  for(int frame = 0; frame < 64; frame++) {
-    rainbowWave(frame);
+  // If we've played all animations, reshuffle and start over
+  if (currentAnimationIndex >= NUM_ANIMATIONS)
+  {
+    currentAnimationIndex = 0;
+    Serial.println("Reshuffling animations...");
+    shuffleAnimations();
   }
-
-  // Test Pattern 3: Pixel Chase (run at 8 FPS)
-  Serial.println("Test 6: Pixel Chase @ 8 FPS");
-  for(int i = 0; i < 2; i++) {
-    pixelChase(matrix.Color(255, 0, 0), FRAME_DELAY);
-    pixelChase(matrix.Color(0, 255, 0), FRAME_DELAY);
-    pixelChase(matrix.Color(0, 0, 255), FRAME_DELAY);
-  }
-
-  // Test Pattern 4: Row by Row (8 frames = 1 second)
-  Serial.println("Test 7: Row Scan @ 8 FPS");
-  rowScan(matrix.Color(255, 128, 0), FRAME_DELAY);
-
-  // Test Pattern 5: Column by Column (8 frames = 1 second)
-  Serial.println("Test 8: Column Scan @ 8 FPS");
-  columnScan(matrix.Color(0, 255, 255), FRAME_DELAY);
-
-  delay(2000);
 }
 
-// Fill all LEDs with one color
-void solidColor(uint32_t color, int wait) {
-  for(int i = 0; i < NUM_LEDS; i++) {
-    matrix.setPixelColor(i, color);
+// Fisher-Yates shuffle algorithm for random animation order
+void shuffleAnimations()
+{
+  // Initialize array with sequential indices
+  for (uint8_t i = 0; i < NUM_ANIMATIONS; i++)
+  {
+    animationOrder[i] = i;
   }
+
+  // Shuffle using Fisher-Yates algorithm
+  for (uint8_t i = NUM_ANIMATIONS - 1; i > 0; i--)
+  {
+    uint8_t j = random(i + 1);
+    uint8_t temp = animationOrder[i];
+    animationOrder[i] = animationOrder[j];
+    animationOrder[j] = temp;
+  }
+}
+
+// Get RGB color from palette stored in PROGMEM
+uint32_t getPaletteColor(uint8_t animIndex, uint8_t colorIdx)
+{
+  uint8_t r = pgm_read_byte(&PALETTES[animIndex][colorIdx * 3]);
+  uint8_t g = pgm_read_byte(&PALETTES[animIndex][colorIdx * 3 + 1]);
+  uint8_t b = pgm_read_byte(&PALETTES[animIndex][colorIdx * 3 + 2]);
+  return matrix.Color(r, g, b);
+}
+
+// Display a single frame from an animation
+void displayFrame(uint8_t animIndex, uint8_t frameIndex)
+{
+  uint16_t frameOffset = frameIndex * 64;
+
+  for (uint8_t pixelIdx = 0; pixelIdx < 64; pixelIdx++)
+  {
+    uint8_t colorIdx = pgm_read_byte(&FRAMES[animIndex][frameOffset + pixelIdx]);
+    uint32_t color = getPaletteColor(animIndex, colorIdx);
+    matrix.setPixelColor(pixelIdx, color);
+  }
+
   matrix.show();
-  delay(wait);
 }
 
-// Rainbow wave effect
-void rainbowWave(int offset) {
-  for(int i = 0; i < NUM_LEDS; i++) {
-    // ColorHSV uses 16-bit hue (0-65535)
-    // Spread rainbow across all pixels and animate with offset
-    // Using 2048 per frame = ~2 full rainbow cycles in 64 frames (8 seconds)
-    int pixelHue = ((i * 65536 / NUM_LEDS) + (offset * 2048)) & 0xFFFF;
-    matrix.setPixelColor(i, matrix.gamma32(matrix.ColorHSV(pixelHue)));
-  }
-  matrix.show();
-  delay(FRAME_DELAY);
-}
-
-// Chase a single pixel around the matrix
-void pixelChase(uint32_t color, int wait) {
-  for(int i = 0; i < NUM_LEDS; i++) {
-    matrix.clear();
-    matrix.setPixelColor(i, color);
-    matrix.show();
-    delay(wait);
-  }
-}
-
-// Scan row by row
-void rowScan(uint32_t color, int wait) {
-  for(int row = 0; row < MATRIX_HEIGHT; row++) {
-    matrix.clear();
-    for(int col = 0; col < MATRIX_WIDTH; col++) {
-      int ledIndex = row * MATRIX_WIDTH + col;
-      matrix.setPixelColor(ledIndex, color);
+// Play an animation for 64 frames (8 seconds at 8 FPS)
+void playAnimation(uint8_t animIndex)
+{
+  // Loop through all 8 frames, 8 times = 64 total frames = 8 seconds
+  for (uint8_t cycle = 0; cycle < 8; cycle++)
+  {
+    for (uint8_t frameIdx = 0; frameIdx < 8; frameIdx++)
+    {
+      displayFrame(animIndex, frameIdx);
+      delay(FRAME_DELAY);
     }
-    matrix.show();
-    delay(wait);
-  }
-}
-
-// Scan column by column
-void columnScan(uint32_t color, int wait) {
-  for(int col = 0; col < MATRIX_WIDTH; col++) {
-    matrix.clear();
-    for(int row = 0; row < MATRIX_HEIGHT; row++) {
-      int ledIndex = row * MATRIX_WIDTH + col;
-      matrix.setPixelColor(ledIndex, color);
-    }
-    matrix.show();
-    delay(wait);
   }
 }
