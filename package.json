@@ -16,7 +16,12 @@
     "functions:serve": "pnpm functions:build && firebase emulators:start --only functions",
     "deploy": "pnpm build:all && firebase deploy",
     "deploy:hosting": "pnpm build && firebase deploy --only hosting",
-    "deploy:functions": "pnpm functions:deploy"
+    "deploy:functions": "pnpm functions:deploy",
+    "pio:build": "cd seeduino_xiao && uv tool run platformio run",
+    "pio:upload": "cd seeduino_xiao && uv tool run platformio run --target upload",
+    "pio:clean": "cd seeduino_xiao && uv tool run platformio run --target clean",
+    "pio:monitor": "cd seeduino_xiao && uv tool run platformio device monitor",
+    "pio:build-upload": "cd seeduino_xiao && uv tool run platformio run --target upload"
   },
   "devDependencies": {
     "prettier": "3.6.2",
