@@ -32,3 +32,6 @@ functions/lib
 *.njsproj
 *.sln
 *.sw?
+
+# FreeCAD
+*.FCBak
