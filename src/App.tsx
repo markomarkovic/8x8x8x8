@@ -215,9 +215,19 @@ export const App = () => {
     if (pendingState) {
       setState(pendingState)
       isInitialLoadRef.current = false
-    } else if (!window.location.hash) {
-      // No URL hash means we're starting fresh - mark initial load complete
-      isInitialLoadRef.current = false
+    } else {
+      const currentHash = window.location.hash.slice(1)
+      // Mark initial load complete if:
+      // 1. No URL hash (starting fresh)
+      // 2. Legacy format hash (560 chars, loaded synchronously)
+      if (
+        !currentHash ||
+        (!currentHash.startsWith('v2:') &&
+          !currentHash.startsWith('v3:') &&
+          !currentHash.startsWith('v4:'))
+      ) {
+        isInitialLoadRef.current = false
+      }
     }
 
     return () => {
